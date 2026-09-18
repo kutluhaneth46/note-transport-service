@@ -112,11 +112,9 @@ impl GrpcServer {
             .parse::<SocketAddr>()
             .map_err(|e| crate::Error::Internal(format!("Invalid address: {e}")))?;
 
-        let cors = CorsLayer::new().allow_origin(Any).allow_headers(Any).allow_methods(Any);
-
         tonic::transport::Server::builder()
             .accept_http1(true)
-            .layer(cors)
+            .layer(grpc_web_cors_layer())
             .layer(GrpcWebLayer::new())
             .layer(GlobalConcurrencyLimitLayer::new(self.config.max_connections))
             .layer(TimeoutLayer::new(Duration::from_secs(self.config.request_timeout as u64)))
@@ -127,6 +125,26 @@ impl GrpcServer {
             .await
             .map_err(|e| crate::Error::Internal(format!("Server error: {e}")))
     }
+}
+
+/// CORS layer for gRPC-web browser clients.
+///
+/// Browsers hide response headers that are not listed in
+/// `Access-Control-Expose-Headers`. Without exposing the gRPC status headers, a
+/// failing call looks like HTTP 200 with an empty body and `miden-client`
+/// reports a malformed response instead of the real `grpc-status` /
+/// `grpc-message` the server already sent (see #164). Matches the RPC node's
+/// `cors_for_grpc_web_layer` exposure set.
+fn grpc_web_cors_layer() -> CorsLayer {
+    CorsLayer::new()
+        .allow_origin(Any)
+        .allow_headers(Any)
+        .allow_methods(Any)
+        .expose_headers([
+            Status::GRPC_STATUS,
+            Status::GRPC_MESSAGE,
+            Status::GRPC_STATUS_DETAILS,
+        ])
 }
 
 impl StreamerCtx {
