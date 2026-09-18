@@ -55,16 +55,18 @@ Telemetry is configured through environment variables:
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `OTEL_ENABLED` | `false` | Enables OpenTelemetry export when set to `true`. |
-| `OTEL_TRACES_ENDPOINT` | `http://localhost:4317` | OTLP endpoint for trace and metric export. |
+| `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` | unset | OTLP traces endpoint. When set, enables OpenTelemetry export. |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | unset | Fallback OTLP endpoint if the traces-specific variable is unset. |
 | `JSON_LOGGING` | `false` | Emits JSON logs when set to `true`. |
 | `RUST_LOG` | `INFO` | Standard Rust tracing filter. |
+
+Export is on when either endpoint variable is set, and off when both are unset.
+There are no `--enable-otel` / `--otel-endpoint` CLI flags.
 
 Example:
 
 ```bash
-OTEL_ENABLED=true \
-OTEL_TRACES_ENDPOINT=http://otel-collector:4317 \
+OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4317 \
 JSON_LOGGING=true \
 RUST_LOG=INFO \
 miden-note-transport-node --host 0.0.0.0 --database-url /var/lib/miden-note-transport/node.db

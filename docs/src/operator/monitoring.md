@@ -2,9 +2,11 @@
 
 We provide logging to `stdout` and an optional [OpenTelemetry](https://opentelemetry.io/) exporter for our metrics and traces.
 
-OpenTelemetry exporting can be enabled by setting the `OTEL_ENABLED=true` environment variable when operating
-the node. The OTLP endpoint (default `http://localhost:4317`) can be overridden with `OTEL_TRACES_ENDPOINT`, and
-structured JSON logging to `stdout` can be enabled with `JSON_LOGGING=true`.
+OpenTelemetry exporting turns on when a standard OTLP endpoint is set via
+`OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` or `OTEL_EXPORTER_OTLP_ENDPOINT` (the former
+takes precedence). There is no separate on/off switch: when neither variable is
+set, export stays disabled. Structured JSON logging to `stdout` can be enabled
+with `JSON_LOGGING=true`.
 
 ## Metrics
 
@@ -75,11 +77,11 @@ export RUST_LOG=debug
 
 ## Configuration
 
-The OpenTelemetry trace and metrics exporters are enabled by setting `OTEL_ENABLED=true` when starting the node:
+The OpenTelemetry trace and metrics exporters are enabled by setting an OTLP
+endpoint when starting the node:
 
 ```sh
-OTEL_ENABLED=true \
-OTEL_TRACES_ENDPOINT=http://localhost:4317 \
+OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://localhost:4317 \
 miden-note-transport-node
 ```
 

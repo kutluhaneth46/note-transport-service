@@ -7,6 +7,7 @@ use opentelemetry_sdk::metrics::{PeriodicReader, SdkMeterProvider};
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::trace::SpanExporter;
 use tracing::subscriber::Subscriber;
+use tracing::warn;
 use tracing_opentelemetry::OpenTelemetryLayer;
 use tracing_subscriber::layer::{Filter, SubscriberExt};
 use tracing_subscriber::{Layer, Registry};
@@ -93,7 +94,13 @@ pub fn setup_tracing(cfg: TracingConfig) -> Result<()> {
                 Ok(exporter) => {
                     Some(open_telemetry_layer(exporter, "miden-note-transport-node".to_string()))
                 },
-                Err(_) => None,
+                Err(err) => {
+                    warn!(
+                        error = %err,
+                        "failed to build OpenTelemetry trace exporter; continuing without tracing export"
+                    );
+                    None
+                },
             }
         } else {
             None
