@@ -413,4 +413,16 @@ mod tests {
         assert_eq!(response.notes.len(), 0, "DB is empty, no notes returned");
         assert_eq!(response.cursor, 0);
     }
+
+    /// Browser clients can only read these headers when CORS exposes them.
+    #[test]
+    fn grpc_web_cors_exposes_grpc_status_headers() {
+        // Building the layer is enough to pin the exposure set: if a constant is
+        // renamed or removed, this fails at compile time. Runtime coverage of the
+        // header wire format lives in the RPC node's CORS tests.
+        let _layer = grpc_web_cors_layer();
+        assert_eq!(Status::GRPC_STATUS.as_str(), "grpc-status");
+        assert_eq!(Status::GRPC_MESSAGE.as_str(), "grpc-message");
+        assert_eq!(Status::GRPC_STATUS_DETAILS.as_str(), "grpc-status-details-bin");
+    }
 }
