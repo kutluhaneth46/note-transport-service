@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use tracing::{error, info};
+use tracing::info;
 
 use self::grpc::{GrpcServer, GrpcServerConfig};
 use crate::Result;
@@ -51,13 +51,14 @@ impl Node {
         })
     }
 
-    /// Node running-task
-    pub async fn entrypoint(self) {
+    /// Node running-task.
+    ///
+    /// Propagates fatal gRPC server errors so the process can exit non-zero
+    /// (Docker/systemd `restart: on-failure` depends on this).
+    pub async fn entrypoint(self) -> Result<()> {
         info!("Starting Miden Transport Node");
         tokio::spawn(self.maintenance.entrypoint());
 
-        if let Err(e) = self.grpc.serve().await {
-            error!("Server error: {e}");
-        }
+        self.grpc.serve().await
     }
 }

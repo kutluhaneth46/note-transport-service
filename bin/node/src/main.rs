@@ -78,7 +78,7 @@ async fn main() -> Result<()> {
 
     // Run Node
     let node = Node::init(config).await?;
-    node.entrypoint().await;
+    node.entrypoint().await?;
 
     Ok(())
 }
